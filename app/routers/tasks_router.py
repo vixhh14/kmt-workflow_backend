@@ -168,7 +168,7 @@ async def complete_task(task_id: str, db: Session = Depends(get_db)):
         raise HTTPException(status_code=400, detail="Task must be in progress to complete")
     if task.started_at:
         duration = (datetime.utcnow() - task.started_at).total_seconds()
-        task.total_duration_seconds += int(duration)
+        task.total_duration_seconds = (task.total_duration_seconds or 0) + int(duration)
     task.status = "completed"
     task.completed_at = datetime.utcnow()
     log = TaskTimeLog(

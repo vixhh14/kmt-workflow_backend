@@ -73,6 +73,32 @@ async def login(credentials: LoginRequest, db: Session = Depends(get_db)):
         )
         print(f"Token creation took: {time.time() - t3:.4f}s")
         
+        # Record Attendance
+        try:
+            from app.models.models_db import Attendance
+            from datetime import datetime
+            today_str = datetime.utcnow().strftime('%Y-%m-%d')
+            
+            # Check if already marked for today
+            existing_attendance = db.query(Attendance).filter(
+                Attendance.user_id == user.user_id,
+                Attendance.date == today_str
+            ).first()
+            
+            if not existing_attendance:
+                new_attendance = Attendance(
+                    user_id=user.user_id,
+                    date=today_str,
+                    status='present',
+                    # ip_address=request.client.host # Requires Request object, skipping for now
+                )
+                db.add(new_attendance)
+                db.commit()
+                print(f"Attendance marked for {user.username}")
+        except Exception as e:
+            print(f"Error marking attendance: {e}")
+            # Don't fail login if attendance fails
+        
         print(f"Total login time: {time.time() - start_time:.4f}s")
         
         # Return token and user info

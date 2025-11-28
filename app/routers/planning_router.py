@@ -101,3 +101,73 @@ async def delete_planning_task(task_id: str, db: Session = Depends(get_db)):
     db.delete(db_task)
     db.commit()
     return {"message": "Planning task deleted successfully"}
+
+@router.get("/overview")
+async def get_planning_overview(db: Session = Depends(get_db)):
+    from app.models.models_db import Task, User, Machine
+    
+    # 1. Running Projects Overview
+    # Group tasks by project and calculate progress
+    projects = {}
+    tasks = db.query(Task).filter(Task.project != None).all()
+    
+    for task in tasks:
+        if task.project not in projects:
+            projects[task.project] = {
+                "name": task.project,
+                "total_tasks": 0,
+                "completed_tasks": 0,
+                "status": "pending" # pending, in_progress, completed
+            }
+        
+        projects[task.project]["total_tasks"] += 1
+        if task.status == "completed":
+            projects[task.project]["completed_tasks"] += 1
+    
+    # Calculate status and percentage
+    project_list = []
+    for p_name, p_data in projects.items():
+        if p_data["total_tasks"] > 0:
+            percentage = (p_data["completed_tasks"] / p_data["total_tasks"]) * 100
+            p_data["progress"] = round(percentage)
+            
+            if p_data["completed_tasks"] == p_data["total_tasks"]:
+                p_data["status"] = "completed"
+            elif p_data["completed_tasks"] > 0:
+                p_data["status"] = "in_progress"
+            
+            project_list.append(p_data)
+            
+    # 2. Operator Working Status
+    # Get all operators and check if they have an in_progress task
+    operators = db.query(User).filter(User.role == "operator").all()
+    operator_status = []
+    
+    for op in operators:
+        current_task = db.query(Task).filter(
+            Task.assigned_to == op.user_id,
+            Task.status == "in_progress"
+        ).first()
+        
+        status_data = {
+            "id": op.user_id,
+            "name": op.full_name or op.username,
+            "status": "idle",
+            "current_task": None,
+            "machine": None
+        }
+        
+        if current_task:
+            status_data["status"] = "working"
+            status_data["current_task"] = current_task.title
+            if current_task.machine_id:
+                machine = db.query(Machine).filter(Machine.id == current_task.machine_id).first()
+                if machine:
+                    status_data["machine"] = machine.name
+        
+        operator_status.append(status_data)
+        
+    return {
+        "projects": project_list,
+        "operators": operator_status
+    }

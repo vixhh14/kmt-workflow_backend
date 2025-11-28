@@ -143,3 +143,16 @@ class OutsourceItem(Base):
     
     # Relationship
     task = relationship("Task")
+
+class Attendance(Base):
+    __tablename__ = "attendance"
+
+    id = Column(Integer, primary_key=True, index=True)
+    user_id = Column(String, ForeignKey("users.user_id"))
+    date = Column(String)  # YYYY-MM-DD
+    login_time = Column(DateTime, default=datetime.utcnow)
+    status = Column(String, default="present")  # present, absent, leave
+    ip_address = Column(String, nullable=True)
+    
+    # Relationship
+    user = relationship("User")

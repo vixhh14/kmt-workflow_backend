@@ -12,36 +12,49 @@ router = APIRouter(
     responses={404: {"description": "Not found"}},
 )
 
-@router.get("/", response_model=AnalyticsData)
+@router.get("/")
 async def get_analytics(db: Session = Depends(get_db)):
-    # 1. Task Stats
-    total_tasks = db.query(Task).count()
-    completed_tasks = db.query(Task).filter(Task.status == "completed").count()
-    pending_tasks = db.query(Task).filter(Task.status == "pending").count()
+    # 1. Active Projects
+    # Count distinct projects where tasks are not completed
+    active_projects_query = db.query(Task.project).filter(
+        Task.status.in_(['pending', 'in_progress', 'on_hold']),
+        Task.project != None
+    ).distinct()
+    active_projects_count = active_projects_query.count()
+    active_projects_list = [p[0] for p in active_projects_query.all()]
+
+    # 2. Attendance
+    from app.models.models_db import Attendance, User
+    from datetime import datetime
+    today_str = datetime.utcnow().strftime('%Y-%m-%d')
     
-    # Group by priority
-    priority_counts = db.query(Task.priority, func.count(Task.priority)).group_by(Task.priority).all()
-    tasks_by_priority = {p: count for p, count in priority_counts if p}
+    present_users = db.query(User).join(Attendance).filter(
+        Attendance.date == today_str,
+        Attendance.status == 'present'
+    ).all()
     
-    # Group by status
-    status_counts = db.query(Task.status, func.count(Task.status)).group_by(Task.status).all()
-    tasks_by_status = {s: count for s, count in status_counts if s}
+    total_users_count = db.query(User).count()
+    present_count = len(present_users)
+    absent_count = total_users_count - present_count
     
-    # 2. Machine Usage
-    machine_usage_counts = db.query(Task.machine_id, func.count(Task.machine_id)).filter(Task.machine_id != None).group_by(Task.machine_id).all()
-    machine_usage = {m: count for m, count in machine_usage_counts if m}
+    present_list = [{"username": u.username, "full_name": u.full_name, "role": u.role} for u in present_users]
     
-    # 3. Revenue Estimation (Placeholder logic)
-    # Sum of hourly rates of active machines? Or just a placeholder value for now.
-    # Let's sum the cost of outsource items for now as a different metric, or keep it 0.
-    revenue_estimated = 0.0
-    
-    return AnalyticsData(
-        total_tasks=total_tasks,
-        completed_tasks=completed_tasks,
-        pending_tasks=pending_tasks,
-        tasks_by_priority=tasks_by_priority,
-        tasks_by_status=tasks_by_status,
-        machine_usage=machine_usage,
-        revenue_estimated=revenue_estimated
-    )
+    # Get absent users (simplistic approach: all users not in present list)
+    present_ids = [u.user_id for u in present_users]
+    absent_users = db.query(User).filter(User.user_id.notin_(present_ids)).all()
+    absent_list = [{"username": u.username, "full_name": u.full_name, "role": u.role} for u in absent_users]
+
+    # Return dict to bypass strict Pydantic model for now
+    return {
+        "active_projects_count": active_projects_count,
+        "active_projects_list": active_projects_list,
+        "attendance": {
+            "present_count": present_count,
+            "absent_count": absent_count,
+            "present_list": present_list,
+            "absent_list": absent_list
+        },
+        # Keep existing data for compatibility if needed, or just return what's requested
+        "total_tasks": db.query(Task).count(),
+        "tasks_by_status": {s: count for s, count in db.query(Task.status, func.count(Task.status)).group_by(Task.status).all() if s}
+    }
