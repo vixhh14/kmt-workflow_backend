@@ -123,11 +123,16 @@ async def hold_task(task_id: str, request: TaskActionRequest, db: Session = Depe
         raise HTTPException(status_code=404, detail="Task not found")
     if task.status != "in_progress":
         raise HTTPException(status_code=400, detail="Task must be in progress to hold")
+    
+    # Calculate duration since start and add to total
     if task.started_at:
         duration = (datetime.utcnow() - task.started_at).total_seconds()
-        task.total_duration_seconds += int(duration)
+        task.total_duration_seconds = (task.total_duration_seconds or 0) + int(duration)
+    
     task.status = "on_hold"
     task.hold_reason = request.reason
+    task.started_at = None  # Clear started_at when holding
+    
     log = TaskTimeLog(
         id=str(uuid.uuid4()),
         task_id=task_id,

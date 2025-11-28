@@ -9,9 +9,7 @@ pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 
 def verify_password(plain_password: str, hashed_password: str) -> bool:
     """Verify a plain password against a hashed password."""
-    # Using SHA256 to match the existing user creation logic
-    password_hash = hashlib.sha256(plain_password.encode()).hexdigest()
-    return password_hash == hashed_password
+    return pwd_context.verify(plain_password, hashed_password)
 
 def create_access_token(data: dict, expires_delta: Optional[timedelta] = None):
     """Create a JWT access token."""
@@ -33,5 +31,5 @@ def decode_access_token(token: str):
         return None
 
 def hash_password(password: str) -> str:
-    """Hash a password using SHA256."""
-    return hashlib.sha256(password.encode()).hexdigest()
+    """Hash a password using bcrypt."""
+    return pwd_context.hash(password)

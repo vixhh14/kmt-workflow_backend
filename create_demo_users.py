@@ -49,14 +49,6 @@ def create_demo_users():
             "role": "planning",
             "full_name": "Planning User",
             "approval_status": "approved"
-        },
-        {
-            "username": "vendor",
-            "password": "vendor123",
-            "email": "vendor@workflow.com",
-            "role": "vendor",
-            "full_name": "Vendor User",
-            "approval_status": "approved"
         }
     ]
     
@@ -73,7 +65,9 @@ def create_demo_users():
             existing_user = db.query(User).filter(User.username == username).first()
             
             if existing_user:
-                print(f"⚠️  User '{username}' already exists, skipping...")
+                print(f"⚠️  User '{username}' already exists, updating password...")
+                existing_user.password_hash = hash_password(user_data['password'])
+                existing_user.approval_status = user_data['approval_status'] # Ensure status is correct
                 continue
             
             # Create new user
