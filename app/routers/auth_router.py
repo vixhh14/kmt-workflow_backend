@@ -150,15 +150,13 @@ async def signup(user_data: dict, db: Session = Depends(get_db)):
     db.refresh(new_user)
     
     # Create approval record
-    from app.core.database import get_db_connection
-    conn = get_db_connection()
-    cursor = conn.cursor()
-    cursor.execute("""
-        INSERT INTO user_approvals (user_id, status)
-        VALUES (?, 'pending')
-    """, (new_user.user_id,))
-    conn.commit()
-    conn.close()
+    from app.models.models_db import UserApproval
+    new_approval = UserApproval(
+        user_id=new_user.user_id,
+        status='pending'
+    )
+    db.add(new_approval)
+    db.commit()
     
     return {
         "message": "User registered successfully. Pending admin approval.",

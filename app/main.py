@@ -18,6 +18,15 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+@app.on_event("startup")
+async def startup_event():
+    from create_demo_users import create_demo_users
+    try:
+        print("Running startup tasks...")
+        create_demo_users()
+    except Exception as e:
+        print(f"Error creating demo users: {e}")
+
 @app.get("/")
 def root():
     return {"message": "Workflow Tracker API running"}

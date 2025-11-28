@@ -31,3 +31,7 @@ def decode_access_token(token: str):
         return payload
     except JWTError:
         return None
+
+def hash_password(password: str) -> str:
+    """Hash a password using SHA256."""
+    return hashlib.sha256(password.encode()).hexdigest()
