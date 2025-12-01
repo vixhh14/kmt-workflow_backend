@@ -58,6 +58,27 @@ def create_demo_users():
     db = SessionLocal()
     
     try:
+        # First, check if any admin exists
+        admin_exists = db.query(User).filter(User.role == "admin").first()
+        
+        if not admin_exists:
+            print("⚠️  No admin found! Creating default admin account...")
+            default_admin = User(
+                user_id=str(uuid.uuid4()),
+                username="admin",
+                password_hash=hash_password("admin123"),
+                email="admin@workflow.com",
+                role="admin",
+                full_name="Admin User",
+                approval_status="approved",
+                created_at=datetime.utcnow(),
+                updated_at=datetime.utcnow()
+            )
+            db.add(default_admin)
+            db.commit()
+            print("✅ Default admin created: admin / admin123")
+        
+        # Now create/update other demo users
         for user_data in demo_users:
             username = user_data['username']
             

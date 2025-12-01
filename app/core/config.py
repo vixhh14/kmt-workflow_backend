@@ -10,5 +10,6 @@ ACCESS_TOKEN_EXPIRE_MINUTES = int(os.getenv("ACCESS_TOKEN_EXPIRE_MINUTES", "1440
 CORS_ORIGINS = [
     "http://localhost:5173",
     "https://kmt-workflow-tracker-qayt.vercel.app",
+    "https://kmt-workflow-tracker-qayt-5xkup7miu.vercel.app",
 ]
 
