@@ -55,7 +55,12 @@ async def login(credentials: LoginRequest, db: Session = Depends(get_db)):
         print(f"Password verification took: {time.time() - t2:.4f}s")
         
         if not is_valid:
-            print("Invalid password")
+            print(f"Invalid password for user {user.username}")
+            print(f"Stored hash: {user.password_hash}")
+            # Verify if hash looks like bcrypt
+            if not user.password_hash.startswith('$2b$'):
+                print("CRITICAL: Stored hash does not look like a valid bcrypt hash!")
+            
             raise HTTPException(
                 status_code=status.HTTP_401_UNAUTHORIZED,
                 detail="Incorrect username or password",
