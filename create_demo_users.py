@@ -70,9 +70,7 @@ def create_demo_users():
                 email="admin@workflow.com",
                 role="admin",
                 full_name="Admin User",
-                approval_status="approved",
-                created_at=datetime.utcnow(),
-                updated_at=datetime.utcnow()
+                approval_status="approved"
             )
             db.add(default_admin)
             db.commit()
@@ -99,9 +97,7 @@ def create_demo_users():
                 email=user_data['email'],
                 role=user_data['role'],
                 full_name=user_data['full_name'],
-                approval_status=user_data['approval_status'],
-                created_at=datetime.utcnow(),
-                updated_at=datetime.utcnow()
+                approval_status=user_data['approval_status']
             )
             
             db.add(new_user)
