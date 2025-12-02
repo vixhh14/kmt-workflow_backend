@@ -1,7 +1,7 @@
 from fastapi import APIRouter, HTTPException, status, Depends
 from sqlalchemy.orm import Session
-from app.models.auth_model import LoginRequest, LoginResponse
-from app.core.auth_utils import verify_password, create_access_token
+from app.models.auth_model import LoginRequest, LoginResponse, SecurityQuestionRequest, PasswordResetRequest
+from app.core.auth_utils import verify_password, create_access_token, hash_password
 from app.core.database import get_db
 from app.models.models_db import User
 
@@ -9,6 +9,36 @@ router = APIRouter(
     prefix="/auth",
     tags=["authentication"],
 )
+
+@router.post("/get-security-question")
+async def get_security_question(request: SecurityQuestionRequest, db: Session = Depends(get_db)):
+    user = db.query(User).filter(User.username == request.username).first()
+    if not user:
+        raise HTTPException(status_code=404, detail="User not found")
+    
+    if not user.security_question:
+        raise HTTPException(status_code=400, detail="No security question set for this user")
+        
+    return {"question": user.security_question}
+
+@router.post("/reset-password")
+async def reset_password(request: PasswordResetRequest, db: Session = Depends(get_db)):
+    user = db.query(User).filter(User.username == request.username).first()
+    if not user:
+        raise HTTPException(status_code=404, detail="User not found")
+        
+    if not user.security_answer:
+        raise HTTPException(status_code=400, detail="No security answer set for this user")
+        
+    # Verify answer (case-insensitive)
+    if user.security_answer.lower().strip() != request.security_answer.lower().strip():
+        raise HTTPException(status_code=400, detail="Incorrect security answer")
+        
+    # Update password
+    user.password_hash = hash_password(request.new_password)
+    db.commit()
+    
+    return {"message": "Password reset successfully"}
 
 @router.post("/login", response_model=LoginResponse)
 async def login(credentials: LoginRequest, db: Session = Depends(get_db)):

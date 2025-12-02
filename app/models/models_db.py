@@ -21,6 +21,10 @@ class User(Base):
     unit_id = Column(String, nullable=True)
     approval_status = Column(String, default='pending') # pending, approved, rejected
     
+    # Security Question for Password Reset
+    security_question = Column(String, nullable=True)
+    security_answer = Column(String, nullable=True)
+    
     created_at = Column(DateTime, default=datetime.utcnow)
     updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
 
