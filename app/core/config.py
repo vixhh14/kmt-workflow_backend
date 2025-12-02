@@ -7,9 +7,18 @@ JWT_SECRET = os.getenv("JWT_SECRET", "c2b0644eb4df8d087f994c58862a418fd455ac0286
 JWT_ALGORITHM = os.getenv("JWT_ALGORITHM", "HS256")
 ACCESS_TOKEN_EXPIRE_MINUTES = int(os.getenv("ACCESS_TOKEN_EXPIRE_MINUTES", "1440"))
 
-CORS_ORIGINS = [
+# Parse CORS origins from environment variable
+backend_cors_origins_str = os.getenv("BACKEND_CORS_ORIGINS", "")
+CORS_ORIGINS = [origin.strip() for origin in backend_cors_origins_str.split(",") if origin.strip()]
+
+# Add default origins if not present
+default_origins = [
     "http://localhost:5173",
+    "http://localhost:3000",
     "https://kmt-workflow-tracker-qayt.vercel.app",
-    "https://kmt-workflow-tracker-qayt-5xkup7miu.vercel.app",
 ]
+
+for origin in default_origins:
+    if origin not in CORS_ORIGINS:
+        CORS_ORIGINS.append(origin)
 
