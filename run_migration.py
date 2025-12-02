@@ -10,7 +10,9 @@ cursor = conn.cursor()
 migrations = [
     # Users table
     ("ALTER TABLE users ADD COLUMN updated_at TIMESTAMP", "users.updated_at"),
-    
+    ("ALTER TABLE users ADD COLUMN security_question TEXT", "users.security_question"),
+    ("ALTER TABLE users ADD COLUMN security_answer TEXT", "users.security_answer"),
+
     # Machines table
     ("ALTER TABLE machines ADD COLUMN current_operator TEXT", "machines.current_operator"),
     ("ALTER TABLE machines ADD COLUMN updated_at TIMESTAMP", "machines.updated_at"),
