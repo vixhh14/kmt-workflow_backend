@@ -18,11 +18,14 @@ from app.core.config import CORS_ORIGINS
 import uvicorn
 
 app = FastAPI()
-
+origins = [
+    "http://localhost:5173",   # local frontend
+    "https://kmt-workflow-tracker-qayt.vercel.app"  # deployed frontend
+]
 # CORS configuration – allow specific origins (including Vercel domain)
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=CORS_ORIGINS,
+    allow_origins=origins,
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
