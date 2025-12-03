@@ -15,7 +15,10 @@ CORS_ORIGINS = [origin.strip() for origin in backend_cors_origins_str.split(",")
 default_origins = [
     "http://localhost:5173",
     "http://localhost:3000",
+    "http://127.0.0.1:5173",
+    "http://127.0.0.1:3000",
     "https://kmt-workflow-tracker-qayt.vercel.app",
+    "https://kmt-workflow-tracker.vercel.app",
 ]
 
 for origin in default_origins:
