@@ -17,9 +17,15 @@ from app.routers import (
 from app.core.config import CORS_ORIGINS
 import uvicorn
 
-app = FastAPI()
+# Create FastAPI app with metadata
+app = FastAPI(
+    title="Workflow Tracker API",
+    description="Backend API for KMT Workflow Tracker",
+    version="1.0.0",
+)
 
-# CORS configuration – allow specific origins (including Vercel domain)
+# CORS configuration
+print("🔧 CORS Origins:", CORS_ORIGINS)
 app.add_middleware(
     CORSMiddleware,
     allow_origins=CORS_ORIGINS,
@@ -33,16 +39,27 @@ app.add_middleware(
 async def startup_event():
     from create_demo_users import create_demo_users
     try:
-        print("Running startup tasks...")
+        print("🚀 Running startup tasks...")
         create_demo_users()
+        print("✅ Startup complete")
     except Exception as e:
-        print(f"Error creating demo users: {e}")
+        print(f"❌ Error creating demo users: {e}")
 
+# Root endpoint
 @app.get("/")
 def root():
-    return {"message": "Workflow Tracker API running"}
+    return {
+        "message": "Workflow Tracker API running",
+        "version": "1.0.0",
+        "status": "healthy"
+    }
 
-# Include routers
+# Health check endpoint
+@app.get("/health")
+def health_check():
+    return {"status": "ok"}
+
+# Include routers (NO /api prefix - routes are already prefixed)
 app.include_router(auth_router.router)
 app.include_router(users_router.router)
 app.include_router(admin_router.router)
