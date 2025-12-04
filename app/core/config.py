@@ -19,6 +19,7 @@ default_origins = [
     "http://127.0.0.1:3000",
     "https://kmt-workflow-tracker-qayt.vercel.app",
     "https://kmt-workflow-tracker.vercel.app",
+    "https://kmt-workflow-tracker-qayt-l7ytc60vt.vercel.app",
 ]
 
 for origin in default_origins:
