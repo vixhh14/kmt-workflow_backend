@@ -25,14 +25,19 @@ app = FastAPI(
 )
 
 # CORS configuration
-print("🔧 CORS Origins:", CORS_ORIGINS)
+origins = [
+    "http://localhost:5173",
+    "https://kmt-workflow-tracker-qayt-ngvll9k9e.vercel.app"
+]
+
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=CORS_ORIGINS,
+    allow_origins=origins,
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
 
 # Startup event – create demo users if needed
 @app.on_event("startup")
