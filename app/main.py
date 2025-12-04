@@ -42,16 +42,29 @@ app.add_middleware(
 )
 
 
-# Startup event – create demo users if needed
+# Startup event – create tables and demo users
 @app.on_event("startup")
 async def startup_event():
+    from app.core.database import Base, engine
+    from app.models.models_db import Subtask  # Import to ensure table is registered
     from create_demo_users import create_demo_users
+    
     try:
         print("🚀 Running startup tasks...")
+        
+        # Create all database tables (including new Subtask table)
+        print("📊 Creating database tables...")
+        Base.metadata.create_all(bind=engine)
+        print("✅ Database tables created/verified")
+        
+        # Create demo users
+        print("👥 Creating demo users...")
         create_demo_users()
+        print("✅ Demo users created/verified")
+        
         print("✅ Startup complete")
     except Exception as e:
-        print(f"❌ Error creating demo users: {e}")
+        print(f"❌ Error during startup: {e}")
 
 # Root endpoint
 @app.get("/")
