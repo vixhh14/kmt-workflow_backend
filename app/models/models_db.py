@@ -161,3 +161,17 @@ class Attendance(Base):
     
     # Relationship
     user = relationship("User")
+
+class Subtask(Base):
+    __tablename__ = "subtasks"
+
+    id = Column(String, primary_key=True, index=True)
+    task_id = Column(String, ForeignKey("tasks.id"), index=True)
+    title = Column(String)
+    status = Column(String, default="pending")  # pending, completed
+    notes = Column(String, nullable=True)
+    created_at = Column(DateTime, default=datetime.utcnow)
+    updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+
+    # Relationship
+    task = relationship("Task")
