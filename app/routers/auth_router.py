@@ -210,6 +210,20 @@ async def signup(user_data: dict, db: Session = Depends(get_db)):
     db.commit()
     db.refresh(new_user)
     
+    # Add skills if present
+    if 'skills' in user_data and isinstance(user_data['skills'], list):
+        from app.models.models_db import UserMachine
+        for skill in user_data['skills']:
+            # skill should be {'machine_id': '...', 'skill_level': '...'}
+            if skill.get('machine_id'):
+                new_skill = UserMachine(
+                    user_id=new_user.user_id,
+                    machine_id=skill.get('machine_id'),
+                    skill_level=skill.get('skill_level', 'intermediate')
+                )
+                db.add(new_skill)
+        db.commit()
+    
     # Create approval record
     from app.models.models_db import UserApproval
     new_approval = UserApproval(

@@ -14,6 +14,7 @@ from app.routers import (
     approvals_router,
     admin_router,
     subtasks_router,
+    seed_router,
 )
 from app.core.config import CORS_ORIGINS
 import uvicorn
@@ -94,6 +95,7 @@ app.include_router(machine_categories_router.router)
 app.include_router(user_skills_router.router)
 app.include_router(approvals_router.router)
 app.include_router(subtasks_router.router)
+app.include_router(seed_router.router)
 
 if __name__ == "__main__":
     uvicorn.run("app.main:app", host="0.0.0.0", port=8000, reload=True)
